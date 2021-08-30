@@ -1,6 +1,9 @@
 import { makeStyles } from "@material-ui/core/styles";
 
 export const useDashboardStyle = makeStyles((theme) => ({
+  gridContainer:{
+    padding: "2rem"
+  },
   deviceTable: {
     flexBasis: "200%",
   },

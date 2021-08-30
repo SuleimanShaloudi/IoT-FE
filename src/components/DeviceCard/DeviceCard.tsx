@@ -8,7 +8,6 @@ import Divider from "@material-ui/core/Divider";
 import { useDeviceCardStyles } from "./DeviceCard.style";
 import { DeviceCardProps } from "./DeviceCard.types";
 import { ReactComponent as EditIcon } from "../../images/icn-edit.svg";
-import EditableLabel from "react-inline-editing";
 import { RIEInput } from "riek";
 
 export const DeviceCardComponent = (props: DeviceCardProps) => {

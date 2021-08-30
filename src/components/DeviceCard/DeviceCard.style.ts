@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core/styles";
-import { green, pink, deepOrange, deepPurple } from "@material-ui/core/colors";
+import { green, pink, deepOrange } from "@material-ui/core/colors";
 
 export const useDeviceCardStyles = makeStyles(({ palette }) => ({
   card: {

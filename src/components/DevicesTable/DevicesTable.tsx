@@ -39,19 +39,10 @@ const DevicesTable = (props: DeviceTableProps) => {
   const { deviceTypesList } = props;
   const classes = useDevicesTableStyle();
   const {
-    flex,
-    header,
-    actions,
-    avatarThumbnail,
-    caption,
-    input,
     root,
-    select,
-    subHeader,
     tableBodyCell,
     tableHeadCell,
     tableRow,
-    toolbar,
   } = classes;
 
   return (

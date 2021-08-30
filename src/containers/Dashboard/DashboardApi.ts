@@ -69,7 +69,7 @@ export const DashboardAPI = {
       .catch((error) => {});
     if (devices && readings) {
       let readingMap: Map<number, ReadingResponse[]> = new Map();
-      readings.map((reading) => {
+      readings.forEach((reading) => {
         const deviceReadings = readingMap.get(reading.device_id);
         if (deviceReadings) {
           readingMap.set(reading.device_id, [...deviceReadings, reading]);
@@ -77,7 +77,7 @@ export const DashboardAPI = {
           readingMap.set(reading.device_id, [reading]);
         }
       });
-      devices.map((device) => {
+      devices.forEach((device) => {
         if (device.id) {
           const deviceReadings = readingMap.get(device.id);
           if (deviceReadings) {

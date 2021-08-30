@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useDashboardStyle } from "./Dashboard.style";
 import { DashboardAPI } from "./DashboardApi";
@@ -21,9 +21,8 @@ import DevicesTable from "../../components/DevicesTable";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import AutoSave from "../../components/AutoSubmit";
-import { DEVICES_LIST_PAGE_HEADER } from "../../constants/devices-list.constants";
 import { PieChart } from "react-minimal-pie-chart";
-import { DEVICE_TYPES } from "../../constants/dashboard.constants";
+import { DASHBOARD_PAGE_HEADER, DEVICE_TYPES, DEVICE_TYPES_MAX_VALUES, PIE_CHART_COLORS } from "../../constants/dashboard.constants";
 
 import EmojiObjectsRoundedIcon from "@material-ui/icons/EmojiObjectsRounded";
 import LineChart from "../../components/LineChart/LineChart";
@@ -31,14 +30,11 @@ import LineChart from "../../components/LineChart/LineChart";
 const Dashboard = () => {
   const classes = useDashboardStyle();
   const {
-    deviceTable,
-    tableContainer,
     container,
     form,
     formControlStyle,
     selectButtonStyles,
     header,
-    buttonHeader,
     natInputFieldStyle,
     paper,
     searchWrapper,
@@ -47,19 +43,9 @@ const Dashboard = () => {
     paperStyle,
   } = classes;
 
-  const pieChartColors = [
-    "#E38627",
-    "#C13C37",
-    "#6A2135",
-    "#04C1F7",
-    "#CDD8E3",
-    "#044C84",
-    "#C24A37",
-  ];
-
-  const [deviceList, setDeviceList] = useState<DeviceResponse[]>([]);
-  const [showndeviceList, setShownDeviceList] = useState<DeviceResponse[]>([]);
-
+  const [serverDeviceWithReadingsList, setServerDeviceWithReadingsList] = useState<
+    DeviceResponse[]
+  >([]);
   const [deviceWithReadingsList, setDeviceWithReadingsList] = useState<
     DeviceResponse[]
   >([]);
@@ -76,12 +62,6 @@ const Dashboard = () => {
   const deviceNameFieldRef = useRef("");
   const deviceTypeFieldRef = useRef("");
 
-  const getDeviceListApi = async () => {
-    const deviceList = await DashboardAPI.getDeviceList();
-    await setDeviceList(deviceList);
-    await setShownDeviceList(deviceList);
-  };
-
   const getDeviceTypesMap = async () => {
     const response = await DashboardAPI.getPercentages();
     if (response) {
@@ -95,6 +75,7 @@ const Dashboard = () => {
   const getDevicesReadings = async () => {
     const response = await DashboardAPI.getDevicesReadings();
     if (response) {
+      await setServerDeviceWithReadingsList(response);
       await setDeviceWithReadingsList(response);
     }
   };
@@ -117,7 +98,7 @@ const Dashboard = () => {
       deviceTypesChart.push({
         title: key,
         value: value,
-        color: pieChartColors[i],
+        color: PIE_CHART_COLORS[i],
       });
 
       i++;
@@ -130,26 +111,25 @@ const Dashboard = () => {
     deviceName: string;
     deviceType: string;
   }) => {
-    await getDeviceListApi();
     if (values.deviceType && !values.deviceName) {
-      const result = deviceList.filter(
+      const result = serverDeviceWithReadingsList.filter(
         (device) => device.type === values.deviceType
       );
-      await setShownDeviceList(result);
+      await setDeviceWithReadingsList(result);
     } else if (values.deviceName && !values.deviceType) {
-      const result = showndeviceList.filter(
+      const result = serverDeviceWithReadingsList.filter(
         (device) =>
           device.name.toLowerCase().indexOf(values.deviceName.toLowerCase()) !==
           -1
       );
-      await setShownDeviceList(result);
+      await setDeviceWithReadingsList(result);
     } else if (values.deviceName && values.deviceType) {
-      const result = deviceList.filter(
+      const result = serverDeviceWithReadingsList.filter(
         (device) =>
           device.name.toLowerCase().indexOf(values.deviceName.toLowerCase()) !==
-            -1 && device.type === values.deviceType
+          -1 && device.type === values.deviceType
       );
-      await setShownDeviceList(result);
+      await setDeviceWithReadingsList(result);
     }
 
     deviceNameFieldRef.current = values.deviceName;
@@ -181,9 +161,32 @@ const Dashboard = () => {
   return (
     <div className={container}>
       <div className={header}>
-        <Typography className={title}>{DEVICES_LIST_PAGE_HEADER} </Typography>
+        <Typography className={title}>{DASHBOARD_PAGE_HEADER} </Typography>
       </div>
-
+      <Accordion style={{ margin: "2rem" }}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+        >
+          <Typography> Device Types Statistics</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <div className={classes.deviceTable}>
+            <DevicesTable deviceTypesList={deviceTypesList} />
+          </div>
+          <PieChart
+            label={(data) => data.dataEntry.percentage.toFixed(2)}
+            labelPosition={65}
+            labelStyle={{
+              fontSize: "0.2rem",
+              filter: "invert(1)",
+            }}
+            radius={40}
+            data={deviceTypesChart}
+          />
+        </AccordionDetails>
+      </Accordion>
       <div className={paper}>
         <div className={tableHeader}>
           <Hidden xsDown>
@@ -228,55 +231,28 @@ const Dashboard = () => {
           </Hidden>
         </div>
         <div className={classes.tableContainer}>
-          <Accordion style={{ width: "100%" }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel2a-content"
-              id="panel2a-header"
-            >
-              <Typography> Device Types Statistics</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <div className={classes.deviceTable}>
-                <DevicesTable deviceTypesList={deviceTypesList} />
-              </div>
-              <PieChart
-                label={(data) => data.dataEntry.percentage.toFixed(2)}
-                labelPosition={65}
-                labelStyle={{
-                  fontSize: "0.2rem",
-                  filter: "invert(1)",
-                }}
-                radius={40}
-                data={deviceTypesChart}
-              />
-            </AccordionDetails>
-          </Accordion>
-
           <React.Fragment>
-            <Grid container spacing={4}>
+            <Grid container spacing={8} className={classes.gridContainer}>
               {deviceWithReadingsList &&
                 deviceWithReadingsList.length &&
                 deviceWithReadingsList.map((e, index) => {
-                  console.log(e.type);
-
                   switch (e.type) {
                     case DEVICE_TYPES.LIGHT_SENSOR:
                       if (e.readings) {
                         return (
                           <Grid key={index} item sm={12} md={6} lg={3}>
-                            <Card>
-                              <CardContent style={{ textAlign: "center" }}>
+                            <Card style={{ height: "96%" }}>
+                              <CardContent style={{ height: "100%", textAlign: "center" }}>
                                 {e.readings[0].value !== "0" ? (
                                   <EmojiObjectsRoundedIcon
                                     style={{
                                       color: "yellowgreen",
-                                      fontSize: "10rem",
+                                      fontSize: "17rem",
                                     }}
                                   />
                                 ) : (
                                   <EmojiObjectsRoundedIcon
-                                    style={{ color: "grey", fontSize: "10rem" }}
+                                    style={{ color: "grey", fontSize: "17rem" }}
                                   />
                                 )}
                                 <Typography variant="body2" component="p">
@@ -294,14 +270,14 @@ const Dashboard = () => {
                       if (e.readings) {
                         return (
                           <Grid key={index} item sm={12} md={6} lg={3}>
-                            <Card>
+                            <Card style={{ height: "96%" }}>
                               <CardContent style={{ textAlign: "center" }}>
                                 <EmojiObjectsRoundedIcon
                                   style={{
                                     color: `#${e.readings[0].value.substring(
                                       2
                                     )}`,
-                                    fontSize: "10rem",
+                                    fontSize: "17rem",
                                   }}
                                 />
                                 <Typography variant="body2" component="p">
@@ -322,6 +298,80 @@ const Dashboard = () => {
                             <Card>
                               <CardContent style={{ textAlign: "center" }}>
                                 <LineChart
+                                  maxValue={DEVICE_TYPES_MAX_VALUES.GAS_SENSOR}
+                                  unit={e.readings[0].unit}
+                                  data={getDeviceReadingsNumbers(e.readings)}
+                                  label={e.name}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      }
+                      break;
+                    case DEVICE_TYPES.HR_SENSOR:
+                      if (e.readings) {
+                        return (
+                          <Grid key={index} item sm={12} md={6} lg={3}>
+                            <Card>
+                              <CardContent style={{ textAlign: "center" }}>
+                                <LineChart
+                                  maxValue={DEVICE_TYPES_MAX_VALUES.HR_SENSOR}
+                                  unit={e.readings[0].unit}
+                                  data={getDeviceReadingsNumbers(e.readings)}
+                                  label={e.name}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      }
+                      break;
+                    case DEVICE_TYPES.HUMIDITY_SENSOR:
+                      if (e.readings) {
+                        return (
+                          <Grid key={index} item sm={12} md={6} lg={3}>
+                            <Card>
+                              <CardContent style={{ textAlign: "center" }}>
+                                <LineChart
+                                  maxValue={DEVICE_TYPES_MAX_VALUES.HUMIDITY_SENSOR}
+                                  unit={e.readings[0].unit}
+                                  data={getDeviceReadingsNumbers(e.readings)}
+                                  label={e.name}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      }
+                      break;
+                    case DEVICE_TYPES.PRESSURE_SENSOR:
+                      if (e.readings) {
+                        return (
+                          <Grid key={index} item sm={12} md={6} lg={3}>
+                            <Card>
+                              <CardContent style={{ textAlign: "center" }}>
+                                <LineChart
+                                  maxValue={DEVICE_TYPES_MAX_VALUES.PRESSURE_SENSOR}
+                                  unit={e.readings[0].unit}
+                                  data={getDeviceReadingsNumbers(e.readings)}
+                                  label={e.name}
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      }
+                      break;
+                    case DEVICE_TYPES.TEMPERATURE_SENSOR:
+                      if (e.readings) {
+                        return (
+                          <Grid key={index} item sm={12} md={6} lg={3}>
+                            <Card>
+                              <CardContent style={{ textAlign: "center" }}>
+                                <LineChart
+                                  maxValue={DEVICE_TYPES_MAX_VALUES.TEMPERATURE_SENSOR}
+                                  unit={e.readings[0].unit}
                                   data={getDeviceReadingsNumbers(e.readings)}
                                   label={e.name}
                                 />
