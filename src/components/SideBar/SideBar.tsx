@@ -9,7 +9,7 @@ import {
   SIDE_BAR_OVERVIEW_ACITON,
   SIDE_BAR_IDEAS_ACTION,
 } from "../../constants/sidebar-constants";
-import { Redirect, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const SideBar = () => {
   const classes = useSideBarStyle();

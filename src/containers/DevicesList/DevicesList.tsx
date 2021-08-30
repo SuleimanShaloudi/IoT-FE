@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
+import React, { BaseSyntheticEvent, useRef, useState } from "react";
 import { Form, Formik } from "formik";
 import { Typography, Hidden } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
@@ -96,7 +96,7 @@ const DevicesList = () => {
       const result = deviceList.filter(
         (device) =>
           device.name.toLowerCase().indexOf(values.deviceName.toLowerCase()) !==
-            -1 && device.type === values.deviceType
+          -1 && device.type === values.deviceType
       );
       await setShownDeviceList(result);
     }
@@ -142,13 +142,13 @@ const DevicesList = () => {
   const sortDevices = () => {
     isDevicesSorted
       ? setShownDeviceList(
-          showndeviceList.sort((a: DeviceResponse, b: DeviceResponse) =>
-            b.name.localeCompare(a.name)
-          )
+        showndeviceList.sort((a: DeviceResponse, b: DeviceResponse) =>
+          b.name.localeCompare(a.name)
         )
+      )
       : showndeviceList.sort((a: DeviceResponse, b: DeviceResponse) =>
-          a.name.localeCompare(b.name)
-        );
+        a.name.localeCompare(b.name)
+      );
 
     setDevicesSorted(!isDevicesSorted);
   };
@@ -202,7 +202,6 @@ const DevicesList = () => {
                     handleSubmit,
                     handleReset,
                     handleChange,
-                    handleBlur,
                   } = props;
                   return (
                     <form onSubmit={handleSubmit}>

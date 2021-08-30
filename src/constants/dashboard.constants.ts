@@ -1,3 +1,5 @@
+export const DASHBOARD_PAGE_HEADER = "Dashboard";
+
 export const DEVICE_TYPES = {
   HR_SENSOR: "HR_SENSOR",
   LIGHT_SENSOR: "LIGHT_SENSOR",
